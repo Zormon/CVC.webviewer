@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Configuracion - Visor Web</title>
+    <script src="../_config/config.js" defer></script>
+    <link rel="stylesheet" href="../res/config.css">
+  </head>
+  <body class="config">
+      <form id="config" class="flex">       
+        <div class="col">
+          <div>
+            <label for="url">Direccion Web</label>
+            <input type="text" id="url" title="Requerido" placeholder="http://127.0.0.1" required>
+          </div>
+
+          <div>
+            <label for="logsDir">Directorio de registros</label>
+            <input type="text" id="logsDir" title="Requerido" placeholder="/home/cvc/telemetry/logs/" required>
+          </div>
+
+          <legend>Ventana</legend>
+            <select id="windowType">
+              <option value="0">Pantalla completa</option>
+              <option value="1">Sin bordes</option>
+              <option value="2">Normal</option>
+            </select>
+            
+            <label for="windowSize">Tamaño de la ventana</label>
+            <div class="coord">
+              <input type="num" id="windowSizeX" placeholder="1280" maxlength="4"> x 
+              <input type="num" id="windowSizeY" placeholder="720" maxlength="4">
+            </div>
+
+            <label for="windowPos">Posición de la ventana</label>
+            <div class="coord">
+              <input type="num" id="windowPosX" placeholder="0" maxlength="4"> x 
+              <input type="num" id="windowPosY" placeholder="0" maxlength="4">
+            </div>
+          </fieldset>
+          <button id="save">Aplicar</button>
+        </div>
+      </form>
+  </body>
+</html>
