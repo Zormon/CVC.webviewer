@@ -18,7 +18,7 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
   // Defaults
   const DEFAULT_CONFIG = { 
     url: 'http://www.google.es',
-    logsDir: '/home/cvc/telemetry/logs/',
+    logsDir: '/home/cvc/telemetry/apps/',
     window: {
       type: 0,
       posX: 0,
