@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Configuracion - Visor Web</title>
+    <script src="../preload.web.js"></script>
     <script src="../_config/config.js" defer></script>
     <link rel="stylesheet" href="../res/config.css">
   </head>
@@ -19,25 +20,36 @@
             <input type="text" id="logsDir" title="Requerido" placeholder="/home/cvc/telemetry/logs/" required>
           </div>
 
-          <legend>Ventana</legend>
+          <fieldset>
+            <legend>Ventana</legend>
             <select id="windowType">
-              <option value="0">Pantalla completa</option>
-              <option value="1">Sin bordes</option>
-              <option value="2">Normal</option>
+              <option value="0">Pantalla completa única</option>
+              <option value="3">Sin bordes completa</option>
+              <option value="1">Sin bordes personalizada</option>
+              <option value="2">Flotante</option>
             </select>
-            
-            <label for="windowSize">Tamaño de la ventana</label>
-            <div class="coord">
-              <input type="num" id="windowSizeX" placeholder="1280" maxlength="4"> x 
-              <input type="num" id="windowSizeY" placeholder="720" maxlength="4">
+  
+            <div>
+              <span>Tamaño de la ventana</span>
+              <div id="windowSize" class="coord">
+                <input type="num" id="windowSizeX" placeholder="1280" maxlength="4"> x 
+                <input type="num" id="windowSizeY" placeholder="720" maxlength="4">
+              </div>
+            </div>
+            <div>
+              <span>Posición de la ventana</span>
+              <div id="windowPos" class="coord">
+                <input type="num" id="windowPosX" placeholder="0" maxlength="4"> x 
+                <input type="num" id="windowPosY" placeholder="0" maxlength="4">
+              </div>
             </div>
 
-            <label for="windowPos">Posición de la ventana</label>
-            <div class="coord">
-              <input type="num" id="windowPosX" placeholder="0" maxlength="4"> x 
-              <input type="num" id="windowPosY" placeholder="0" maxlength="4">
+            <div>
+              <input type="checkbox" id="alwaysOnTop">
+              <label for="alwaysOnTop">Siempre visible</label>
             </div>
           </fieldset>
+
           <button id="save">Aplicar</button>
         </div>
       </form>

@@ -1,22 +1,17 @@
-function $(id)      { return document.getElementById(id)    }
-function $$(id)     { return document.querySelector(id)     }
-function $$$(id)    { return document.querySelectorAll(id)  }
-
-const remote = require('electron').remote
-const { ipcRenderer } = require('electron')
-var prefs = remote.getGlobal('appConf')
+var CONF = window.ipc.get.appConf()
 
 function savePreferences() {
-    prefs.url = $('url').value
-    prefs.logsDir = $('logsDir').value
+    CONF.url = $('url').value
+    CONF.logsDir = $('logsDir').value
 
-    prefs.window.type = parseInt($('windowType').value)
-    prefs.window.sizeX = $('windowSizeX').value != ''? parseInt($('windowSizeX').value) : parseInt($('windowSizeX').placeholder)
-    prefs.window.sizeY = $('windowSizeY').value != ''? parseInt($('windowSizeY').value) : parseInt($('windowSizeY').placeholder)
-    prefs.window.posX = $('windowPosX').value != ''? parseInt($('windowPosX').value) : parseInt($('windowPosX').placeholder)
-    prefs.window.posY = $('windowPosY').value != ''? parseInt($('windowPosY').value) : parseInt($('windowPosY').placeholder)
+    CONF.window.type = parseInt($('windowType').value)
+    CONF.window.width = $('windowSizeX').value != ''? parseInt($('windowSizeX').value) : parseInt($('windowSizeX').placeholder)
+    CONF.window.height = $('windowSizeY').value != ''? parseInt($('windowSizeY').value) : parseInt($('windowSizeY').placeholder)
+    CONF.window.posX = $('windowPosX').value != ''? parseInt($('windowPosX').value) : parseInt($('windowPosX').placeholder)
+    CONF.window.posY = $('windowPosY').value != ''? parseInt($('windowPosY').value) : parseInt($('windowPosY').placeholder)
+    CONF.window.alwaysOnTop = $('alwaysOnTop').checked
 
-    ipcRenderer.send('savePrefs', prefs )
+    window.ipc.save.appConf( CONF )
 }
 
 $('save').onclick = (e)=> {
@@ -34,32 +29,36 @@ $('logsDir').onclick = ()=> {
 }
 
 $('windowType').onchange = (e) => { 
-    switch (e.currentTarget.value) {
-        case '0': //Fullscreen
-            $('windowSizeX').disabled = true;  $('windowSizeY').disabled = true
-            $('windowPosX').disabled = true;  $('windowPosY').disabled = true
+    switch (parseInt(e.currentTarget.value)) {
+        case 0: case 3: //Fullscreen & fullborderless
+            $('windowSize').parentElement.style.display = 'none'
+            $('windowPos').parentElement.style.display = 'none'
+            $('alwaysOnTop').parentElement.style.display = 'none'
         break
 
-        case '1': // Sin bordes
-            $('windowSizeX').disabled = false;  $('windowSizeY').disabled = false
-            $('windowPosX').disabled = false;  $('windowPosY').disabled = false
+        case 1: // Sin bordes
+            $('windowSize').parentElement.style.display = ''
+            $('windowPos').parentElement.style.display = ''
+            $('alwaysOnTop').parentElement.style.display = ''
         break
 
-        case '2': // Normal
-            $('windowSizeX').disabled = false;  $('windowSizeY').disabled = false
-            $('windowPosX').disabled = true;  $('windowPosY').disabled = true
+        case 2: // Normal
+            $('windowSize').parentElement.style.display = ''
+            $('windowPos').parentElement.style.display = 'none'
+            $('alwaysOnTop').parentElement.style.display = ''
     }
 }
 
 // Initialization
-$('url').value = prefs.url
-$('logsDir').value = prefs.logsDir
+$('url').value = CONF.url
+$('logsDir').value = CONF.logsDir
 
-$('windowType').value = prefs.window.type
-$('windowSizeX').value = prefs.window.sizeX
-$('windowSizeY').value = prefs.window.sizeY
-$('windowPosX').value = prefs.window.posX
-$('windowPosY').value = prefs.window.posY
+$('windowType').value = CONF.window.type
+$('windowSizeX').value = CONF.window.width
+$('windowSizeY').value = CONF.window.height
+$('windowPosX').value = CONF.window.posX
+$('windowPosY').value = CONF.window.posY
+$('alwaysOnTop').checked = CONF.window.alwaysOnTop
 
-const event = new Event('change')
-$('windowType').dispatchEvent(event)
+const ev = new Event('change')
+$('windowType').dispatchEvent(ev)

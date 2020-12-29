@@ -1,5 +1,5 @@
 const appName = 'webviewer'
-const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, Menu, ipcMain, dialog, screen } = require('electron')
 const fs = require("fs")
 const path = require('path')
 const logger = require('./log.js')
@@ -13,7 +13,7 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
 =            Preferencias            =
 =============================================*/
 
-  const CONFIG_FILE = `${app.getPath('userData')}/appConf.json`
+  const CONFIG_FILE = `${app.getPath('userData')}/APPCONF.json`
 
   // Defaults
   const DEFAULT_CONFIG = { 
@@ -23,12 +23,13 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
       type: 0,
       posX: 0,
       posY: 0,
-      sizeX: 1280,
-      sizeY: 720
+      width: 1280,
+      height: 720,
+      alwaysOnTop: true
     }
   }
 
-  if ( !(global.appConf = loadConfigFile(CONFIG_FILE)) )      { global.appConf = DEFAULT_CONFIG }
+  if ( !(global.APPCONF = loadConfigFile(CONFIG_FILE)) )      { global.APPCONF = DEFAULT_CONFIG }
 
 /*=====  End of Preferencias  ======*/
 
@@ -86,7 +87,7 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
     }
   }
 
-  function savePrefs(prefs, file) {
+  function saveConfFile(prefs, file) {
     fs.writeFileSync(file, JSON.stringify(prefs), 'utf8')
   }
 
@@ -100,7 +101,7 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
   }
 
   function restore() {
-    savePrefs(DEFAULT_CONFIG, CONFIG_FILE)
+    saveConfFile(DEFAULT_CONFIG, CONFIG_FILE)
     restart() 
   }
 
@@ -122,23 +123,38 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
 =============================================*/
 
   function initApp() {
-    let windowOptions = {autoHideMenuBar: true, resizable:false, show: false, webPreferences: { nodeIntegration: true}, icon: `${app.getAppPath()}/icon64.png`}
-    if      (appConf.window.type == 0)   { windowOptions.fullscreen = true; windowOptions.resizable = true } // Fullscreen. En linux necesita resizable=true
-    else if (appConf.window.type == 1)   { windowOptions.frame = false; windowOptions.alwaysOnTop = true } // Borderless
+    let windowOptions = {autoHideMenuBar: true, resizable:true, show: false, webPreferences: { contextIsolation: true, preload: path.join(__dirname, "preload.js") }, icon: `${app.getAppPath()}/icon64.png`}
+    if      (APPCONF.window.type == 0)   { windowOptions.fullscreen = true }
+    else if (APPCONF.window.type == 1 || APPCONF.window.type == 3)   { windowOptions.frame = false } // Borderless
+    if (APPCONF.window.type != 0) { windowOptions.alwaysOnTop = APPCONF.window.alwaysOnTop }
     appWin = new BrowserWindow(windowOptions)
 
-    switch (appConf.window.type) {
+    switch (APPCONF.window.type) {
+      case 0: // Fullscreen
+        screen.on('display-metrics-changed', restart )
+      break
       case 1: // Borderless
-        appWin.setPosition( appConf.window.posX, appConf.window.posY)
+        appWin.setPosition( APPCONF.window.posX, APPCONF.window.posY)
       case 2: // Normal Window
-        appWin.setSize(appConf.window.sizeX, appConf.window.sizeY)
+        appWin.setSize(APPCONF.window.width, APPCONF.window.height)
+      break
+      case 3: // fullBorderless
+        let width=0, height=0, displays = screen.getAllDisplays()
+        displays.forEach(d => { 
+          width += d.bounds.width
+          height = (height<d.bounds.height)? d.bounds.height : height
+        })
+
+        appWin.setPosition(0,0)
+        appWin.setSize(width,height)
       break
     }
 
-    appWin.loadURL(appConf.url)
+    appWin.loadURL(APPCONF.url)
     appWin.setTitle(appName)
     appWin.on('page-title-updated', (e)=>{ e.preventDefault()})
     Menu.setApplicationMenu( Menu.buildFromTemplate(menu) )
+    appWin.setResizable(false)
     appWin.show()
     appWin.on('closed', () => { logs.log('MAIN','QUIT',''); app.quit() })
 
@@ -153,7 +169,7 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
   }
 
   function config() {
-    configWin = new BrowserWindow({width: 400, height: 460, show:false, alwaysOnTop: true, webPreferences: { nodeIntegration: true, parent: appWin }})
+    configWin = new BrowserWindow({width: 400, height: 520, show:false, alwaysOnTop: true, webPreferences: { contextIsolation: true, preload: path.join(__dirname, "preload.js"), parent: appWin }})
     configWin.loadFile(`${__dirname}/_config/config.html`)
     configWin.setMenu( null )
     configWin.resizable = false
@@ -182,9 +198,9 @@ app.on('ready', initApp)
 =                 IPC signals                 =
 =============================================*/
 
-ipcMain.on('savePrefs', (e, arg) => { 
-  global.appConf = arg
-  savePrefs(arg, CONFIG_FILE)
+ipcMain.on('saveAppConf', (e, arg) => { 
+  global.APPCONF = arg
+  saveConfFile(arg, CONFIG_FILE)
   logs.log('MAIN', 'SAVE_PREFS', JSON.stringify(arg))
   restart()
 })
@@ -215,7 +231,7 @@ ipcMain.on('saveDirDialog', (e, arg) => {
 })
 
 // Logs
-var logs = new logger(`${global.appConf.logsDir}/`, appName)
+var logs = new logger(`${global.APPCONF.logsDir}/`, appName)
 ipcMain.on('log', (e, arg) =>       { logs.log(arg.origin, arg.event, arg.message) })
 ipcMain.on('logError', (e, arg) =>  { logs.error(arg.origin, arg.error, arg.message) })
 
