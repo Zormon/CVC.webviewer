@@ -19,6 +19,7 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
   const DEFAULT_CONFIG = { 
     url: 'http://www.google.es',
     logsDir: '/home/cvc/telemetry/apps/',
+    touch: true,
     window: {
       type: 0,
       posX: 0,
@@ -30,6 +31,8 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
   }
 
   if ( !(global.APPCONF = loadConfigFile(CONFIG_FILE)) )      { global.APPCONF = DEFAULT_CONFIG }
+
+  if (global.APPCONF.touch)   { app.commandLine.appendSwitch('touch-events', 'enabled') }
 
 /*=====  End of Preferencias  ======*/
 
@@ -183,7 +186,7 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
     const options  = {
       type: 'info',
       buttons: ['Aceptar'],
-      message: 'Visor Web \nComunicacion Visual Canarias 2020\nContacto: 928 67 29 81'
+      message: 'Visor Web \nComunicacion Visual Canarias 2022\nContacto: 928 67 29 81'
      }
     dialog.showMessageBox(appWin, options)
   }
@@ -191,7 +194,10 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
 /*=====  End of Ventanas  ======*/
 
 
-app.on('ready', initApp)
+app.on('ready', ()=>{
+  if (isLinux) { app.importCertificate({certificate:"cvc.p12", password:"cvc"}, ()=>{}) }
+  initApp()
+})
 
 
 /*=============================================
@@ -203,6 +209,17 @@ ipcMain.on('saveAppConf', (e, arg) => {
   saveConfFile(arg, CONFIG_FILE)
   logs.log('MAIN', 'SAVE_PREFS', JSON.stringify(arg))
   restart()
+})
+
+ipcMain.on('getGlobal', (e, type) => {
+  switch(type) {
+    case 'appConf':
+      e.returnValue = global.APPCONF
+    break
+    case 'interface':
+      e.returnValue = global.UI
+    break
+  }
 })
 
 ipcMain.on('saveDirDialog', (e, arg) => {

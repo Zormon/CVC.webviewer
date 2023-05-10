@@ -3,13 +3,17 @@
   <head>
     <meta charset="utf-8">
     <title>Configuracion - Visor Web</title>
-    <script src="../preload.web.js"></script>
-    <script src="../_config/config.js" defer></script>
+    <script type="module" src="config.js"></script>
     <link rel="stylesheet" href="../res/config.css">
   </head>
   <body class="config">
       <form id="config" class="flex">       
         <div class="col">
+          <div>
+            <input type="checkbox" id="touch">
+            <label for="touch">Pantalla táctil</label>
+          </div>
+          
           <div>
             <label for="url">Direccion Web</label>
             <input type="text" id="url" title="Requerido" placeholder="http://127.0.0.1" required>

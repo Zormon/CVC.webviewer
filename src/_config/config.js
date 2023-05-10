@@ -1,8 +1,11 @@
+import {$} from '../exports.web.js'
+
 var CONF = window.ipc.get.appConf()
 
 function savePreferences() {
     CONF.url = $('url').value
     CONF.logsDir = $('logsDir').value
+    CONF.touch = $('touch').checked
 
     CONF.window.type = parseInt($('windowType').value)
     CONF.window.width = $('windowSizeX').value != ''? parseInt($('windowSizeX').value) : parseInt($('windowSizeX').placeholder)
@@ -52,6 +55,7 @@ $('windowType').onchange = (e) => {
 // Initialization
 $('url').value = CONF.url
 $('logsDir').value = CONF.logsDir
+$('touch').checked = CONF.touch
 
 $('windowType').value = CONF.window.type
 $('windowSizeX').value = CONF.window.width
