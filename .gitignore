@@ -1,6 +1,3 @@
 node_modules
 _build
-.vscode
-.gitignore
-yarn.lock
 package-lock.json
