@@ -4,7 +4,7 @@
         {
             "label": "Sass Compile",
             "type": "shell",
-            "command": "sass sass/canalcorp.scss src/res/canalcorp.css -s compressed; sass sass/turnomatic.scss src/res/turnomatic.css -s compressed; sass sass/config.scss src/res/config.css -s compressed",
+            "command": "sass src/sass/config.scss dist/res/config.css -s compressed",
             "group": "build"
         },
         {
