@@ -1,15 +1,15 @@
 {
   "name": "webviewer",
-   "productName": "webviewer",
-  "version": "1.5.0",
+  "productName": "webviewer",
+  "version": "1.5.1",
   "description": "Web Viewer Generico",
   "main": "src/main.js",
   "author": "Comunicacion Visual Canarias",
   "license": "MIT",
-  "devDependencies": {
-    "electron": "^18.2.0"
-  },
   "scripts": {
     "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^24.3.0"
   }
 }
