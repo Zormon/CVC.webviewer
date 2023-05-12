@@ -3,13 +3,13 @@
   "productName": "webviewer",
   "version": "1.5.1",
   "description": "Web Viewer Generico",
-  "main": "src/main.js",
+  "main": "dist/main/main.js",
   "author": "Comunicacion Visual Canarias",
   "license": "MIT",
   "scripts": {
     "start": "electron ."
   },
   "devDependencies": {
-    "electron": "^24.3.0"
+    "electron": "24.3.0"
   }
 }

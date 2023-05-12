@@ -4,25 +4,25 @@
         {
             "label": "Sass Compile",
             "type": "shell",
-            "command": "sass src/sass/config.scss dist/res/config.css -s compressed",
+            "command": "sass --no-source-map src/sass/config.scss dist/UI/_config/config.css -s compressed",
             "group": "build"
         },
         {
             "label": "Build Windows 32",
             "type": "shell",
-            "command": ".vscode/buildWin32.ps1",
+            "command": ".vscode/build.ps1 Win32",
             "group": "build"
         },
         {
             "label": "Build Windows 64",
             "type": "shell",
-            "command": ".vscode/buildWin64.ps1",
+            "command": ".vscode/build.ps1 Win64",
             "group": "build"
         },
 		        {
             "label": "Build Linux",
             "type": "shell",
-            "command": ".vscode/BuildLinux64.ps1",
+            "command": ".vscode/build.ps1 Linux64",
             "group": "build"
         }
     ]
