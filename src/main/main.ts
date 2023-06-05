@@ -1,13 +1,19 @@
+import {TAppConf, TwindowOptions} from '../types'
+
+
 const appName = 'webviewer'
-const { app, BrowserWindow, Menu, ipcMain, dialog, screen } = require('electron')
+import { app, BrowserWindow, Menu, ipcMain, dialog, screen } from 'electron'
 const fs = require("fs")
 const path = require('path')
 const logger = require('./log.js')
+import {sleep, DEFAULT_CONFIG} from './exports.js'
+
 const isLinux = process.platform === "linux"
 const restartCommandShell =  `~/system/scripts/appsCvc restart ${appName} &`
 
-var appWin; var configWin;
-function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
+var appWin:Electron.BrowserWindow
+var configWin:Electron.BrowserWindow | null
+var APPCONF:TAppConf
 
 /*=============================================
 =            Preferencias            =
@@ -15,24 +21,8 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
 
   const CONFIG_FILE = `${app.getPath('userData')}/APPCONF.json`
 
-  // Defaults
-  const DEFAULT_CONFIG = { 
-    url: 'http://www.google.es',
-    logsDir: '/home/cvc/telemetry/apps/',
-    touch: true,
-    window: {
-      type: 0,
-      posX: 0,
-      posY: 0,
-      width: 1280,
-      height: 720,
-      alwaysOnTop: true
-    }
-  }
-
-  if ( !(global.APPCONF = loadConfigFile(CONFIG_FILE)) )      { global.APPCONF = DEFAULT_CONFIG }
-
-  if (global.APPCONF.touch)   { app.commandLine.appendSwitch('touch-events', 'enabled') }
+  APPCONF = loadConfigFile(CONFIG_FILE)
+  if (APPCONF.touch)   { app.commandLine.appendSwitch('touch-events', 'enabled') }
 
 /*=====  End of Preferencias  ======*/
 
@@ -42,16 +32,17 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
 =            Menu            =
 =============================================*/
 
-  const menu = [
+  const menu:Electron.MenuItemConstructorOptions[] = [
     {
         role: 'appMenu',
         label: 'Archivo',
         submenu: [
             {label:'Reiniciar', accelerator: 'CmdOrCtrl+R', click() { restart() } },
-            {role:'forcereload', label:'Refrescar' },
-            {role: 'quit', label:'Salir'}
+            {label:'Refrescar', role: 'forceReload' },
+            {label:'Salir', role: 'quit'}
         ]
-    },{
+    },
+    {
         label: 'Editar',
         submenu: [
             {label:'Ajustes', accelerator: 'CmdOrCtrl+E',  click() {
@@ -61,15 +52,15 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
             {type: 'separator'},
             {label:'Restaurar parámetros',     click() { restoreDialog() } }
         ]
-    }
-    ,{
+    },
+    {
       role: 'help',
       label: 'Ayuda',
       submenu: [
           {label:'Información',     click() { about() } },
-          {role: 'toggledevtools', label:'Consola Web'}
+          {label:'Consola Web', role: 'toggleDevTools'}
       ]
-  }
+    }
   ]
 
 /*=====  End of Menu  ======*/
@@ -90,17 +81,17 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
     }
   }
 
-  function saveConfFile(prefs, file) {
+  function saveConfFile(prefs:TAppConf, file:string) {
     fs.writeFileSync(file, JSON.stringify(prefs), 'utf8')
   }
 
-  function loadConfigFile(file) {
+  function loadConfigFile(file:string):TAppConf {
     if (fs.existsSync(file)) {
       try {
         let data = JSON.parse(fs.readFileSync(file, 'utf8'))
         return data
-      } catch (error) { return false }
-    } else { return false}
+      } catch (error) { return DEFAULT_CONFIG }
+    } else { return DEFAULT_CONFIG}
   }
 
   function restore() {
@@ -114,7 +105,12 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
       buttons: ['Cancelar','Aceptar'],
       message: '¿Restaurar los valores por defecto de la configuración de la aplicación?'
     }
-    dialog.showMessageBox(options, (resp) => { if (resp) { restore(); restart() } }) // Ha pulsado aceptar
+    dialog.showMessageBox(appWin, options).then( resp => { 
+      if (resp.response) { // Ha pulsado aceptar
+        restore()
+        restart() 
+      }
+    })
   }
 
 /*=====  End of Funciones  ======*/
@@ -126,16 +122,22 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
 =============================================*/
 
   function initApp() {
-    let windowOptions = {autoHideMenuBar: true, resizable:true, show: false, webPreferences: { contextIsolation: true, preload: path.join(__dirname, "preload.js") }, icon: `${app.getAppPath()}/icon64.png`}
-    if      (APPCONF.window.type == 0)   { windowOptions.fullscreen = true }
-    else if (APPCONF.window.type == 1 || APPCONF.window.type == 3)   { windowOptions.frame = false } // Borderless
-    if (APPCONF.window.type != 0) { windowOptions.alwaysOnTop = APPCONF.window.alwaysOnTop }
+    let windowOptions:TwindowOptions = {
+      autoHideMenuBar: true,
+      resizable:true,
+      show: false,
+      icon: `${app.getAppPath()}/icon64.png`,
+      fullscreen: APPCONF.window.type==0? true : false,
+      frame: (APPCONF.window.type == 1 || APPCONF.window.type == 3)? false : true,
+      alwaysOnTop: APPCONF.window.alwaysOnTop,
+      webPreferences: { 
+        contextIsolation: true, 
+        preload: path.join(__dirname, "preload.js") 
+      }
+    }
     appWin = new BrowserWindow(windowOptions)
 
     switch (APPCONF.window.type) {
-      case 0: // Fullscreen
-        screen.on('display-metrics-changed', restart )
-      break
       case 1: // Borderless
         appWin.setPosition( APPCONF.window.posX, APPCONF.window.posY)
       case 2: // Normal Window
@@ -161,6 +163,8 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
     appWin.show()
     appWin.on('closed', () => { logs.log('MAIN','QUIT',''); app.quit() })
 
+    screen.on('display-metrics-changed', restart )
+
     logs.log('MAIN','START','')
 
     appWin.webContents.on('did-fail-load', async (e, code, desc)=> {
@@ -172,8 +176,22 @@ function sleep(ms) {return new Promise(r=>setTimeout(r,ms))}
   }
 
   function config() {
-    configWin = new BrowserWindow({width: 400, height: 520, show:false, alwaysOnTop: true, webPreferences: { contextIsolation: true, preload: path.join(__dirname, "preload.js"), parent: appWin }})
-    configWin.loadFile(`${__dirname}/_config/config.html`)
+    let windowOptions:TwindowOptions = {
+      width: 400, height: 520,
+      autoHideMenuBar: false,
+      resizable: false,
+      fullscreen: false,
+      show: false,
+      frame: true,
+      alwaysOnTop: true,
+      webPreferences: {
+        contextIsolation: true,
+        preload: path.join(__dirname, "preload.js"),
+        parent: appWin
+      }
+    }
+    configWin = new BrowserWindow(windowOptions)
+    configWin.loadFile(`${__dirname}/../UI/_config/config.html`)
     configWin.setMenu( null )
     configWin.resizable = false
     configWin.show()
@@ -204,8 +222,8 @@ app.on('ready', ()=>{
 =                 IPC signals                 =
 =============================================*/
 
-ipcMain.on('saveAppConf', (e, arg) => { 
-  global.APPCONF = arg
+ipcMain.on('saveAppConf', (_e, arg) => { 
+  APPCONF = arg
   saveConfFile(arg, CONFIG_FILE)
   logs.log('MAIN', 'SAVE_PREFS', JSON.stringify(arg))
   restart()
@@ -214,20 +232,18 @@ ipcMain.on('saveAppConf', (e, arg) => {
 ipcMain.on('getGlobal', (e, type) => {
   switch(type) {
     case 'appConf':
-      e.returnValue = global.APPCONF
-    break
-    case 'interface':
-      e.returnValue = global.UI
+      e.returnValue = APPCONF
     break
   }
 })
 
 ipcMain.on('saveDirDialog', (e, arg) => {
-  let options
+  let options:Electron.OpenDialogSyncOptions = {}
+  options.defaultPath = arg.dir
+
   if (arg.file) { // Abre archivo
     options = {
       title : 'Abrir archivo lista.xml', 
-      defaultPath : arg.dir,
       buttonLabel : "Abrir lista",
       filters : [{name: 'lista', extensions: ['xml']}],
       properties: ['openFile']
@@ -235,20 +251,18 @@ ipcMain.on('saveDirDialog', (e, arg) => {
   } else { // Abre directorio
     options = {
       title : 'Abrir directorio', 
-      defaultPath : arg.dir,
       buttonLabel : "Abrir directorio",
       properties: ['openDirectory']
     }
   }
-  
 
-  let dir = dialog.showOpenDialogSync(options)
+  let dir = dialog.showOpenDialogSync(appWin, options)
   if (typeof dir != 'undefined')  { e.returnValue = arg.file? path.dirname( dir.toString() ) : dir.toString() }
   else                            { e.returnValue = arg.dir }
 })
 
 // Logs
-var logs = new logger(`${global.APPCONF.logsDir}/`, appName)
+var logs = new logger(`${APPCONF.logsDir}/`, appName)
 ipcMain.on('log', (e, arg) =>       { logs.log(arg.origin, arg.event, arg.message) })
 ipcMain.on('logError', (e, arg) =>  { logs.error(arg.origin, arg.error, arg.message) })
 

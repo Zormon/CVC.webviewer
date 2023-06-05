@@ -1,6 +1,6 @@
 
 // Nombres de iconos de tipografia CVC Icons
-const iconNames = [
+const iconNames:string[] = [
     'ninguno',        // 0
     'carne',        // 1
     'pescado',      // 2
@@ -17,8 +17,8 @@ var querySel = document.querySelector.bind(document)
 var querySelAll = document.querySelectorAll.bind(document)
 
 // Otras funciones
-function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)) }
-function isFunction(f) {return f && {}.toString.call(f)==='[object Function]'}
+function sleep(ms:number) { return new Promise(resolve => setTimeout(resolve, ms)) }
+function isFunction(f:number) {return f && {}.toString.call(f)==='[object Function]'}
 
 /**
  * Muestra un modal con multiples funciones
@@ -29,26 +29,38 @@ function isFunction(f) {return f && {}.toString.call(f)==='[object Function]'}
  * @param {Function} accion Accion a realizar al pulsar el boton de aceptaar
  * @param {Array} buttons Textos alternativos para botones del modal
  */
-function modalBox(id, template, tplvars=[], type='', accion=false, buttons=['Cancelar','Aceptar']) {
+function modalBox(
+    id:number,
+    template:string,
+    tplvars:[string,string][]=[],
+    type='',
+    accion:Function|boolean=false,
+    buttons=['Cancelar','Aceptar']
+  ) {
     if ( template ) { // Añadir
-      if (!document.contains( getById(id) )) {
+      const templateEl = getById(template) as HTMLTemplateElement
+      if (!!!templateEl) { return }
+
+      if (!document.contains( getById(id as unknown as string) )) {
         // Modal Fullscreen Wrapper
         let modal = document.createElement('div')
-        modal.id = id; modal.className = 'modalBox ' + type
+        modal.id = id as unknown as string
+        modal.className = 'modalBox ' + type
   
         // Modal
         let modalBox = document.createElement('div')
-        let content = getById(template).content.cloneNode(true)
+        let content = templateEl.content.cloneNode(true) as DocumentFragment
   
         // Template vars
         tplvars.forEach(item => {
-          try { content.querySelector(`[data-tpl="${item[0]}"]`).innerHTML = item[1] } catch(e){}
+          const el = content.querySelector(`[data-tpl="${item[0]}"]`)
+          if (el) { el.innerHTML = item[1] }
         })
   
         modalBox.appendChild(content)
   
         // Botones
-        if (accion) { 
+        if (typeof accion == 'function') { 
           let btnCancel = document.createElement('button')
           btnCancel.appendChild( document.createTextNode(buttons[0]) )
           btnCancel.id = 'cancel'
@@ -67,11 +79,16 @@ function modalBox(id, template, tplvars=[], type='', accion=false, buttons=['Can
         document.body.appendChild(modal)
       } else {
         tplvars.forEach(item => {
-          try { getById(id).querySelector(`[data-tpl="${item[0]}"]`).textContent = item[1] } catch(e){}
+          const elId = getById(id as unknown as string)
+          if (elId) { 
+            const el = elId.querySelector(`[data-tpl="${item[0]}"]`)
+            if (el) { el.innerHTML = item[1] }
+          }
         })
     }
     } else { // Si template es falso, es que se quiere destruir el modal
-      try { getById(id).remove()} catch(e){}
+      const modal = getById(id as unknown as string)
+      if (modal) { modal.remove() }
     }
   }
 

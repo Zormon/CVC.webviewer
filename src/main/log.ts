@@ -1,15 +1,20 @@
 const fs = require("fs")
 
 class Logger {
+    private logDir:string
+    private appName:string
+    private logsDisabled:boolean
+    private errorsDisabled:boolean
+
     // Crea archivos de log si no existen
-    constructor(logsDir, appName='default') {
+    constructor(logsDir:string, appName='default') {
         this.logDir = logsDir
         this.appName= appName
         this.logsDisabled = false
         this.errorsDisabled = false
     }
 
-    log(origin, event, message) {
+    log(origin:string, event:string, message:string) {
         if ( !fs.existsSync(`${this.logDir}${this.appName}.app.log`) ) {
             try { fs.writeFileSync(`${this.logDir}${this.appName}.app.log`, `# ${this.appName} APPLICATION LOG\n# TIME; ORIGIN; EVENT; MESSAGE`) } catch(e) { this.logsDisabled = true }
         }
@@ -28,7 +33,7 @@ class Logger {
         }
     }
 
-    error(origin, error, message) {
+    error(origin:string, error:string, message:string) {
         if ( !fs.existsSync(`${this.logDir}${this.appName}.error.log`) ) {
             try { fs.writeFileSync(`${this.logDir}${this.appName}.error.log`, `# ${this.appName} ERROR LOG\n# TIME; ORIGIN; ERROR; MESSAGE`) } catch(e) { this.errorsDisabled = true }
         }

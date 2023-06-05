@@ -8,6 +8,12 @@
             "group": "build"
         },
         {
+            "label": "Typescript Compile",
+            "type": "shell",
+            "command": "tsc -p ./src/main/tsconfig.json; tsc -p ./src/UI/tsconfig.json",
+            "group": "build"
+        },
+        {
             "label": "Build Windows 32",
             "type": "shell",
             "command": ".vscode/build.ps1 Win32",
@@ -19,7 +25,7 @@
             "command": ".vscode/build.ps1 Win64",
             "group": "build"
         },
-		        {
+		{
             "label": "Build Linux",
             "type": "shell",
             "command": ".vscode/build.ps1 Linux64",
