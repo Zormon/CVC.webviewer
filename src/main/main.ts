@@ -19,7 +19,7 @@ var APPCONF:TAppConf
 =            Preferencias            =
 =============================================*/
 
-  const CONFIG_FILE = `${app.getPath('userData')}/APPCONF.json`
+  const CONFIG_FILE = `${app.getPath('userData')}/_custom/CONF.json`
 
   APPCONF = loadConfigFile(CONFIG_FILE)
   if (APPCONF.touch)   { app.commandLine.appendSwitch('touch-events', 'enabled') }
