@@ -35,7 +35,7 @@ var APPCONF:TAppConf
   const menu:Electron.MenuItemConstructorOptions[] = [
     {
         role: 'appMenu',
-        label: 'Archivo',
+        label: 'Aplicación',
         submenu: [
             {label:'Reiniciar', accelerator: 'CmdOrCtrl+R', click() { restart() } },
             {label:'Refrescar', role: 'forceReload' },
@@ -43,7 +43,7 @@ var APPCONF:TAppConf
         ]
     },
     {
-        label: 'Editar',
+        label: 'Configurción',
         submenu: [
             {label:'Ajustes', accelerator: 'CmdOrCtrl+E',  click() {
               if (configWin == null)  { config() } 
