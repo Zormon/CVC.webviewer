@@ -2,6 +2,9 @@ export type TAppConf = {
     url: string
     logsDir: string
     touch: boolean
+    debug: {
+        autoOpenDevTools: boolean
+    }
     window: {
         type: number
         posX: number

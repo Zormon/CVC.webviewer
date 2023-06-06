@@ -173,12 +173,12 @@ var APPCONF:TAppConf
       await sleep(8000)
       appWin.reload()
     })
-    //appWin.webContents.openDevTools()
+    if (APPCONF.debug.autoOpenDevTools) { appWin.webContents.openDevTools() }
   }
 
   function config() {
     let windowOptions:TwindowOptions = {
-      width: 400, height: 600,
+      width: 400, height: 640,
       autoHideMenuBar: false,
       resizable: false,
       fullscreen: false,
@@ -198,14 +198,14 @@ var APPCONF:TAppConf
     configWin.show()
     
     configWin.on('closed', () => { configWin = null })
-    //configWin.webContents.openDevTools()
+    if (APPCONF.debug.autoOpenDevTools) { configWin.webContents.openDevTools() }
   }
 
   function about() {
     const options  = {
       type: 'info',
       buttons: ['Aceptar'],
-      message: 'Visor Web \nComunicacion Visual Canarias 2022\nContacto: 928 67 29 81'
+      message: 'Visor Web Ver. 2.0.0 \nComunicacion Visual Canarias 2023\nContacto: 928 67 29 81'
      }
     dialog.showMessageBox(appWin, options)
   }

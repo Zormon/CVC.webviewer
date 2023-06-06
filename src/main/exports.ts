@@ -6,6 +6,9 @@ const DEFAULT_CONFIG:TAppConf = {
     url: 'http://www.google.es',
     logsDir: '/home/cvc/telemetry/apps/',
     touch: true,
+    debug: {
+      autoOpenDevTools: false
+    },
     window: {
       type: 0,
       posX: 0,

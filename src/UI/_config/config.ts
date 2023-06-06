@@ -1,4 +1,4 @@
-import {$} from '../exports.web'
+import {$} from '../exports.web.js'
 import {TAppConf, TipcRenderer} from '../../types'
 
 declare const ipcRenderer:TipcRenderer
@@ -42,6 +42,7 @@ function savePreferences() {
     }
     
     CONF.window.alwaysOnTop = (<HTMLInputElement>$('alwaysOnTop')).checked
+    CONF.debug.autoOpenDevTools = (<HTMLInputElement>$('autoOpenDevTools')).checked
 
     window.ipc.save.appConf( CONF )
 }
@@ -112,6 +113,8 @@ if (el = $('windowSizeY'))  { (<HTMLInputElement>el).value = CONF.window.height.
 if (el = $('windowPosX'))   { (<HTMLInputElement>el).value = CONF.window.posX.toString() }
 if (el = $('windowPosY'))   { (<HTMLInputElement>el).value = CONF.window.posY.toString() }
 if (el = $('alwaysOnTop'))  { (<HTMLInputElement>el).checked = CONF.window.alwaysOnTop }
+
+if (el = $('autoOpenDevTools'))  { (<HTMLInputElement>el).checked = CONF.debug.autoOpenDevTools }
 
 const ev = new Event('change')
 if (el = $('windowType')) { el.dispatchEvent(ev)}
