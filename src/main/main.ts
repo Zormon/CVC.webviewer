@@ -82,6 +82,7 @@ var APPCONF:TAppConf
   }
 
   function saveConfFile(prefs:TAppConf, file:string) {
+    fs.mkdirSync( path.dirname(file), { recursive: true } )
     fs.writeFileSync(file, JSON.stringify(prefs), 'utf8')
   }
 
