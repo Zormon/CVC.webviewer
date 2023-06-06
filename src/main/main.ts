@@ -178,7 +178,7 @@ var APPCONF:TAppConf
 
   function config() {
     let windowOptions:TwindowOptions = {
-      width: 400, height: 520,
+      width: 400, height: 600,
       autoHideMenuBar: false,
       resizable: false,
       fullscreen: false,
